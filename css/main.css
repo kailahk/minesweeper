@@ -26,7 +26,7 @@ header {
 }
 
 h1 {
-    margin-bottom: -2vmin;
+    margin-bottom: -3vmin;
     font-size: 7vmin;
 }
 
@@ -74,4 +74,12 @@ button {
 
 #board > div {
     border: 0.2vmin solid #9C72A8;
+}
+
+#timeLeft {
+    width: 12vmin;
+}
+
+#message {
+    padding: 1vmin 2vmin;
 }

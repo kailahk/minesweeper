@@ -2,18 +2,23 @@
 
 
 /*----- state variables -----*/
-let board; // array of 10 row arrays
+let board; // array of 10 row arrays of 10 cell objects
 let winner; // null or 1 / -1
+let audio; // 'on' or 'off'
+let timer; // 'started' or 'notStarted'
 
 
 /*----- cached elements  -----*/
 let messageEl = document.getElementById('message');
 let flagsNum = document.getElementById('flagsLeft');
 let timeEl = document.getElementById('time');
-let soundEl = document.getElementById('sound')
+let soundEl = document.getElementById('sound');
+let boardEl = document.getElementById('board');
 
 /*----- event listeners -----*/
-
+boardEl.addEventListener('click', handleClick);
+soundEl.addEventListener('click', handleClick);
+boardEl.addEventListener('contextmenu', handleRightClick);
 
 /*----- functions -----*/
 init();
@@ -24,8 +29,8 @@ function generateBombs() {
         let bomb = Math.floor(Math.random() * 100).toString();
         if (bomb.length > 1) {
             let bombCellIdArr = bomb.split('');
-            let bombRowIdx = bombCellIdArr[0];
-            let bombColIdx = bombCellIdArr[1];
+            let bombRowIdx = parseInt(bombCellIdArr[0]);
+            let bombColIdx = parseInt(bombCellIdArr[1]);
             if (board[bombRowIdx][bombColIdx].isBomb === false) {
             board[bombRowIdx][bombColIdx].isBomb = true;
             count++;
@@ -54,126 +59,124 @@ function checkBombsAdj(rowIdx, colIdx) {
         if (neighbor) {
             let neighborID = neighbor.id;
             let neighborIDArr = neighborID.split('');
-            let neighborRowIdx = neighborIDArr[1]
-            let neighborColIdx = neighborIDArr[3];
+            let neighborRowIdx = parseInt(neighborIDArr[1]);
+            let neighborColIdx = parseInt(neighborIDArr[3]);
             board[neighborRowIdx][neighborColIdx].bombsAdj++;
             } else return;
         });
     }};
 
-
-
 function init() {
     board = [
-        [{isBomb: false, bombsAdj: 0, revealed: false},  // 1st/top row (top obj is cell r0c0)
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},],
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false},  // 1st/top row (top obj is cell r0c0)
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},],
 
-        [{isBomb: false, bombsAdj: 0, revealed: false}, 
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},],
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false}, 
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},],
 
-        [{isBomb: false, bombsAdj: 0, revealed: false}, 
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},],
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false}, 
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},],
 
-        [{isBomb: false, bombsAdj: 0, revealed: false}, 
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},],
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false}, 
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},],
 
-        [{isBomb: false, bombsAdj: 0, revealed: false}, 
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},],
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false}, 
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},],
 
-        [{isBomb: false, bombsAdj: 0, revealed: false}, 
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},],
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false}, 
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},],
 
-        [{isBomb: false, bombsAdj: 0, revealed: false}, 
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},],
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false}, 
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},],
 
-        [{isBomb: false, bombsAdj: 0, revealed: false}, 
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},],
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false}, 
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},],
 
-        [{isBomb: false, bombsAdj: 0, revealed: false}, 
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},],
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false}, 
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},],
 
-        [{isBomb: false, bombsAdj: 0, revealed: false}, 
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},
-        {isBomb: false, bombsAdj: 0, revealed: false},],
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false}, 
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
+        {isBomb: false, bombsAdj: 0, revealed: false, flag: false},],
     ]
     generateBombs();
     board.forEach(function(rowArr, rowIdx){
@@ -182,18 +185,106 @@ function init() {
         });
     });
     winner = null;
+    audio = 'off';
+    timer = 'notStarted';
     render();
 };
 
+function handleClick(event) {
+    let cellId = event.target.id;
+    let cellEl = document.getElementById(cellId);
+
+    if (cellId === 'sound') {
+        if (audio === 'off') {
+            audio = 'on';
+        } else if (audio === 'on') {
+            audio = 'off';
+        };
+        
+    } else {
+        let cellIdArr = cellId.split('');
+        let cellRowIdx = parseInt(cellIdArr[1]);
+        let cellColIdx = parseInt(cellIdArr[3]);
+        let clickedCell = board[cellRowIdx][cellColIdx];
+        if (clickedCell.flag === true) return;
+        if (clickedCell.isBomb === false) {
+            clickedCell.revealed = true;
+            checkNeighbors(cellRowIdx, cellColIdx);
+        } else if (clickedCell.isBomb === true) {
+                clickedCell.revealed = true;
+                winner = -1;
+        };
+
+        if (timer === 'notStarted') {
+        const startingMinutes = 2;
+        let time = startingMinutes * 60;
+            function updateTime() {
+                let minutes = Math.floor(time/60);
+                let seconds = time % 60;
+                time--;
+                timeEl.innerHTML = `${minutes}:${seconds}`;
+                timer = 'started';
+                if (time === -1 || winner === -1) {
+                    clearInterval(clock);
+                    winner = -1;
+                }
+            };
+            let clock = setInterval(updateTime, 1000);
+        };
+    };
+
+    winner = getWinner();
+    render();
+};
+
+function handleRightClick(event) {
+    cellId = event.target.id;
+    if (event.target.id !== 'flagImg') {
+        cellIdString = cellId.split('');
+        cellRowIdx = parseInt(cellIdString[1]);
+        cellColIdx = parseInt(cellIdString[3]);
+        console.log(event.target.id);
+        clickedCell = board[cellRowIdx][cellColIdx];
+
+        if (clickedCell.flag === false) {
+            clickedCell.flag = true;
+            flagsNum.innerHTML--;
+        }
+    } else {
+        let cellUnderFlagId = event.target.parentElement.id;
+        cellIdString = cellUnderFlagId.split('');
+        cellRowIdx = parseInt(cellIdString[1]);
+        cellColIdx = parseInt(cellIdString[3]);
+        clickedCell = board[cellRowIdx][cellColIdx];
+        clickedCell.flag = false;
+        flagsNum.innerHTML++;
+    };
+    render();
+};
+
+function getWinner() {
+
+};
+
 function render() {
-    renderMessages();
     renderBoard();
-    renderBanner();
+    renderMessages();
+    renderAudio();
+};
+
+function renderAudio() {
+    if (audio === 'on') {
+        soundEl.innerHTML = '<img id="sound" src="https://i.imgur.com/1Yg9GfY.png">';
+        // insert audioStop() function
+    } else if (audio === 'off') {
+        soundEl.innerHTML = '<img id="sound" src="https://i.imgur.com/HnTMsVL.png">';
+        // insert audioPlay() function
+    }
 };
 
 function renderMessages() {
     if (winner === 1) {
-        messageEl.innerHTML = 'GAME OVER - YOU WIN!';
+        messageEl.innerHTML = '<h4>GAME OVER - YOU WIN!</h4>';
         messageEl.style.backgroundColor = 'green';
         messageEl.style.color = 'white';
         document.querySelector('button').style.visibility = 'visible';
@@ -203,41 +294,35 @@ function renderMessages() {
         document.querySelector('button').style.visibility = 'visible';
     } else {
         messageEl.innerHTML = 'Click any square!';
-    }
+    };
 };
 
 function renderBoard() {
     board.forEach(function(rowArr, rowIdx) {
         rowArr.forEach(function(cell, colIdx) {
-            let cellId = `r${rowIdx}c${colIdx}`;
-            let cellEl = document.getElementById(cellId);
-            if (board[rowIdx][colIdx].isBomb === false) {
-                checkNeighbors(rowIdx, colIdx);
-            } else {
-                if (board[rowIdx][colIdx].isBomb === true)
-                    cellEl.src = "https://i.imgur.com/8csqBHC.png";
-                    cellEl.style.backgroundColor = 'red';
-                    winner = -1;
-                }
-            }
-        );
-    })
+            cellId = `r${rowIdx}c${colIdx}`;
+            let currentCell = document.getElementById(cellId);
+            if (board[rowIdx][colIdx].flag === true) {
+                currentCell.firstChild.innerHTML = `<img id="flagImg" src="https://i.imgur.com/6fTD2xH.png">`;
+            } else if (board[rowIdx][colIdx].flag === false) {
+                if (currentCell.hasChildNodes) {
+                    currentCell.innerHTML = `<div id="r${rowIdx}c${colIdx}"></div>`;
+                };
+            };
+            if (board[rowIdx][colIdx].revealed === true && board[rowIdx][colIdx].isBomb === false) {
+                currentCell.style.backgroundColor = 'white';
+                if (board[rowIdx][colIdx].bombsAdj > 0) {
+                currentCell.innerHTML = `${board[rowIdx][colIdx].bombsAdj}`;
+                };
+            } else if (board[rowIdx][colIdx].revealed === true && board[rowIdx][colIdx].isBomb === true) {
+                currentCell.style.backgroundColor = 'red';
+                currentCell.innerHTML = '<img src="https://i.imgur.com/8csqBHC.png">';
+                winner = -1;
+            };
+        });
+    });
 };
 
-
-function renderBanner() {
-    const startingMinutes = 5;
-    let time = startingMinutes * 60;
-    function updateTime() {
-        let minutes = Math.floor(time/60);
-        let seconds = time % 60;
-        timeEl.innerHTML = `${minutes}:${seconds}`
-        time--;
-    }
-    setInterval(updateTime, 1000);
-    flagsNum.innerHTML--;
-    soundEl.src = 'https://i.imgur.com/1Yg9GfY.png';
-};
 
 function checkNeighbors(rowIdx, colIdx) {
     let neighbor1 = document.getElementById(`r${rowIdx-1}c${colIdx-1}`);
@@ -253,22 +338,25 @@ function checkNeighbors(rowIdx, colIdx) {
 
     neighbors.forEach(function(neighbor) {
         if (neighbor) { 
-            let neighborID = neighbor.id;
-            let neighborIDArr = neighborID.split('');
-            let neighborRowIdx = neighborIDArr[1]
-            let neighborColIdx = neighborIDArr[3];
+            let neighborId = neighbor.id;
+            let neighborIdArr = neighborId.split('');
+            let neighborRowIdx = parseInt(neighborIdArr[1]);
+            let neighborColIdx = parseInt(neighborIdArr[3]);
             let neighborCell = board[neighborRowIdx][neighborColIdx];
-            // if one of the neighbors of the cell clicked has a bombAdj > 0, the neighbor will reveal but flood will stop
-            if (neighborCell.bombsAdj > 0 && neighborCell.revealed === false && neighborCell.isBomb === false) { 
-                neighborCell.revealed = true;
-                neighbor.innerHTML = neighborCell.bombsAdj;
-                neighbor.style.backgroundColor = 'white';
-            } else if (neighborCell.bombsAdj === 0 && neighborCell.isBomb === false) {
-                neighborCell.revealed = true;
-                neighbor.style.backgroundColor = 'white';
-                checkNeighbors(neighborRowIdx, neighborColIdx);
-            } else return;
+            // if the neighbor of the cell is a bomb, it will be left as is
+            if (neighborCell.isBomb === false) {
+                // if a neighbor of the cell clicked has bombsAdj = 0,
+                // the neighbor will reveal and its neighbors willbe checked
+                if (neighborCell.bombsAdj === 0 && neighborCell.revealed === false) {
+                    neighborCell.revealed = true;
+                    checkNeighbors(neighborRowIdx, neighborColIdx);
+                    // if a neighbor of the cell clicked has bombsAdj > 0, 
+                    // the neighbor will reveal but flood will stop
+                } else if (neighborCell.bombsAdj > 0) { 
+                    neighborCell.revealed = true;
+                };
+            };
         };
-    
     });
+    render();
 };
