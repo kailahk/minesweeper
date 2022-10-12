@@ -1,5 +1,6 @@
 /*----- constants -----*/
 const music = new Audio("Sound/231578__lemoncreme__floating-synth-melody-at-130-bpm-c-major-loop-music (1).mp3");
+music.loop = true;
 
 /*----- state variables -----*/
 let board; // array of 10 row arrays of 10 cell objects
@@ -312,13 +313,14 @@ function renderMessages() {
     } else {
         messageEl.innerHTML = 'Click any square!';
         messageEl.style.backgroundColor = 'white';
+        messageEl.style.color = 'black';
         buttonEl.style.visibility = 'hidden';
     };
 };
 
 function resetTimer() {
     const startingMinutes = 2;
-    let time = 10;
+    let time = startingMinutes * 60;
     function updateTime() {
         let minutes = Math.floor(time/60);
         let seconds = time % 60;
