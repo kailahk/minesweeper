@@ -1,11 +1,12 @@
 /*----- constants -----*/
-
+const music = new Audio("Sound/231578__lemoncreme__floating-synth-melody-at-130-bpm-c-major-loop-music (1).mp3");
 
 /*----- state variables -----*/
 let board; // array of 10 row arrays of 10 cell objects
 let winner; // null or 1 / -1
 let audio; // 'on' or 'off'
 let timer; // 'started' or 'notStarted'
+let mCount = 0;
 
 
 /*----- cached elements  -----*/
@@ -20,7 +21,7 @@ let buttonEl = document.querySelector('button');
 boardEl.addEventListener('click', handleClick);
 soundEl.addEventListener('click', handleClick);
 boardEl.addEventListener('contextmenu', handleRightClick);
-buttonEl.addEventListener('click', handleClick);
+buttonEl.addEventListener('click', init);
 
 /*----- functions -----*/
 init();
@@ -38,7 +39,7 @@ function generateBombs() {
             count++;
             }
         } else {
-            board[0][bomb].isBomb = true;
+            board[0][parseInt(bomb)].isBomb = true;
             count++;
         };
     };
@@ -189,44 +190,41 @@ function init() {
     winner = null;
     audio = 'off';
     timer = 'notStarted';
+    timeEl.innerHTML = '2:00'
+    mCount = 0;
     render();
 };
 
 function handleClick(event) {
     let cellId = event.target.id;
     let cellEl = document.getElementById(cellId);
-
     if (cellId === 'sound') {
         if (audio === 'off') {
             audio = 'on';
         } else if (audio === 'on') {
             audio = 'off';
         };
-        
     } else if (cellId === 'button') {
         init();
-    }
-    
-    else {
+    } else {
         let cellIdArr = cellId.split('');
         let cellRowIdx = parseInt(cellIdArr[1]);
         let cellColIdx = parseInt(cellIdArr[3]);
         let clickedCell = board[cellRowIdx][cellColIdx];
-
-        if (cellEl.style.backgroundColor !== 'white' && winner !== 1 && winner !== -1) {
-        if (clickedCell.flag === true) return;
-            if (clickedCell.isBomb === false) {
-                clickedCell.revealed = true;
-                checkNeighbors(cellRowIdx, cellColIdx);
-            } else if (clickedCell.isBomb === true) {
+        if (timeEl.innerHTML === '0:0') return;
+        if (cellEl.style.backgroundColor !== 'white' && winner !== true && winner !== false) {
+            if (clickedCell.flag === true) return;
+                if (clickedCell.isBomb === false) {
                     clickedCell.revealed = true;
-                    winner = -1;
-            };
-        }
-
+                    checkNeighbors(cellRowIdx, cellColIdx);
+                } else if (clickedCell.isBomb === true) {
+                        clickedCell.revealed = true;
+                        winner = false;
+                };
+        };
         if (timer === 'notStarted') {
             resetTimer();
-    };
+        };
     };
     winner = getWinner();
     render();
@@ -235,12 +233,15 @@ function handleClick(event) {
 function handleRightClick(event) {
     event.preventDefault();
     cellId = event.target.id;
+    cellEl = document.getElementById(cellId);
     if (event.target.id !== 'flagImg') {
         cellIdString = cellId.split('');
         cellRowIdx = parseInt(cellIdString[1]);
         cellColIdx = parseInt(cellIdString[3]);
         clickedCell = board[cellRowIdx][cellColIdx];
-        if (clickedCell.flag === false && flagsNum.innerHTML > 0) {
+        if (clickedCell.flag === false 
+            && flagsNum.innerHTML > 0 
+            && cellEl.style.backgroundColor !== 'white') {
             clickedCell.flag = true;
             flagsNum.innerHTML--;
             }
@@ -253,22 +254,32 @@ function handleRightClick(event) {
         clickedCell.flag = false;
         flagsNum.innerHTML++;
     };
+    if (clickedCell.flag === true && clickedCell.isBomb === true) {
+        mCount++;
+    } else if (clickedCell.flag === false) {
+        mCount--;
+    }
+    winner = getWinner();
     render();
 };
 
 function getWinner() {
+    let mineCount = 0;
     board.forEach(function(rowArr, rowIdx) {
         rowArr.forEach(function(cell, colIdx) {
             cellId = `r${rowIdx}c${colIdx}`;
             currentCell = document.getElementById(cellId);
-            if (board[rowIdx][colIdx].revealed === true 
-                && currentCell.style.backgroundColor === 'white'
-                && flagsNum.innerHTML === '0')
-                // && time > 0) {
-                    return winner = 1;
-            });
+            if (board[rowIdx][colIdx].isBomb === true 
+                && board[rowIdx][colIdx].flag === true) {
+                mineCount++
+                console.log(mineCount);
+            };
         });
+    });
+    if (mineCount === 10 || mCount === 10) {
+        return true;
     };
+};
 
 function render() {
     renderAudio();
@@ -279,27 +290,25 @@ function render() {
 function renderAudio() {
     if (audio === 'on') {
         soundEl.innerHTML = '<img id="sound" src="https://i.imgur.com/1Yg9GfY.png">';
-        // insert audioStop() function
+        music.play();
     } else if (audio === 'off') {
         soundEl.innerHTML = '<img id="sound" src="https://i.imgur.com/HnTMsVL.png">';
-        // insert audioPlay() function
+        music.pause();
     }
 };
 
 function renderMessages() {
-    if (winner === 1) {
+    if (winner === true) {
         messageEl.innerHTML = 'GAME OVER - YOU WIN!';
         messageEl.style.backgroundColor = 'green';
         messageEl.style.color = 'white';
         buttonEl.style.visibility = 'visible';
         flagsNum.innerHTML = '10';
-        timer = resetTimer();
-    } else if (winner === -1) {
+    } else if (winner === false) {
         messageEl.innerHTML = 'GAME OVER - YOU LOSE!';
         messageEl.style.backgroundColor = 'red';
         buttonEl.style.visibility = 'visible';
         flagsNum.innerHTML = '10';
-        timer = resetTimer();
     } else {
         messageEl.innerHTML = 'Click any square!';
         messageEl.style.backgroundColor = 'white';
@@ -309,20 +318,24 @@ function renderMessages() {
 
 function resetTimer() {
     const startingMinutes = 2;
-        let time = startingMinutes * 60;
-            function updateTime() {
-                let minutes = Math.floor(time/60);
-                let seconds = time % 60;
-                time--;
-                timeEl.innerHTML = `${minutes}:${seconds}`;
-                timer = 'started';
-                if (time === -1 || winner === -1) {
-                    clearInterval(clock);
-                    winner = -1;
-                }
-            };
+    let time = 10;
+    function updateTime() {
+        let minutes = Math.floor(time/60);
+        let seconds = time % 60;
+        time--;
+        timeEl.innerHTML = `${minutes}:${seconds}`;
+        timer = 'started';
+        if (time === -1 || winner === false || winner === true) {
+            clearInterval(clock);
+            if (time === -1) {
+                winner = false;
+                showBombs();
+            }
+            renderMessages();
+        }
+    };
             let clock = setInterval(updateTime, 1000);
-}
+};
 
 function renderBoard() {
     board.forEach(function(rowArr, rowIdx) {
@@ -342,9 +355,8 @@ function renderBoard() {
                 currentCell.innerHTML = `${board[rowIdx][colIdx].bombsAdj}`;
                 };
             } else if (board[rowIdx][colIdx].revealed === true && board[rowIdx][colIdx].isBomb === true) {
-                currentCell.style.backgroundColor = 'red';
-                currentCell.innerHTML = '<img src="https://i.imgur.com/eTBdjcY.png">';
-                winner = -1;
+                winner = false;
+                showBombs();
             };
             if (board[rowIdx][colIdx].revealed === false && board[rowIdx][colIdx].flag === false) {
                 currentCell.style.backgroundColor = 'lightgrey';
@@ -390,4 +402,21 @@ function checkNeighbors(rowIdx, colIdx) {
         };
     });
     render();
+};
+
+function showBombs() {
+    let bombs = 0;
+    while (bombs < 10) {
+    board.forEach(function(rowArr, rowIdx) {
+        rowArr.forEach(function(cell, colIdx) {
+            cellId = `r${rowIdx}c${colIdx}`;
+            let currentCell = document.getElementById(cellId)
+            if (board[rowIdx][colIdx].isBomb === true) {
+                currentCell.style.backgroundColor = 'red';
+                currentCell.innerHTML = '<img src="https://i.imgur.com/eTBdjcY.png">';
+                bombs++
+            };
+        });
+    });
+    };
 };
