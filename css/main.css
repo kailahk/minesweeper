@@ -74,6 +74,9 @@ button {
 
 #board > div {
     border: 0.2vmin solid #9C72A8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #timeLeft {

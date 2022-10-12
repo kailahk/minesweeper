@@ -14,11 +14,13 @@ let flagsNum = document.getElementById('flagsLeft');
 let timeEl = document.getElementById('time');
 let soundEl = document.getElementById('sound');
 let boardEl = document.getElementById('board');
+let buttonEl = document.querySelector('button');
 
 /*----- event listeners -----*/
 boardEl.addEventListener('click', handleClick);
 soundEl.addEventListener('click', handleClick);
 boardEl.addEventListener('contextmenu', handleRightClick);
+buttonEl.addEventListener('click', handleClick);
 
 /*----- functions -----*/
 init();
@@ -201,55 +203,47 @@ function handleClick(event) {
             audio = 'off';
         };
         
-    } else {
+    } else if (cellId === 'button') {
+        init();
+    }
+    
+    else {
         let cellIdArr = cellId.split('');
         let cellRowIdx = parseInt(cellIdArr[1]);
         let cellColIdx = parseInt(cellIdArr[3]);
         let clickedCell = board[cellRowIdx][cellColIdx];
+
+        if (cellEl.style.backgroundColor !== 'white' && winner !== 1 && winner !== -1) {
         if (clickedCell.flag === true) return;
-        if (clickedCell.isBomb === false) {
-            clickedCell.revealed = true;
-            checkNeighbors(cellRowIdx, cellColIdx);
-        } else if (clickedCell.isBomb === true) {
+            if (clickedCell.isBomb === false) {
                 clickedCell.revealed = true;
-                winner = -1;
-        };
+                checkNeighbors(cellRowIdx, cellColIdx);
+            } else if (clickedCell.isBomb === true) {
+                    clickedCell.revealed = true;
+                    winner = -1;
+            };
+        }
 
         if (timer === 'notStarted') {
-        const startingMinutes = 2;
-        let time = startingMinutes * 60;
-            function updateTime() {
-                let minutes = Math.floor(time/60);
-                let seconds = time % 60;
-                time--;
-                timeEl.innerHTML = `${minutes}:${seconds}`;
-                timer = 'started';
-                if (time === -1 || winner === -1) {
-                    clearInterval(clock);
-                    winner = -1;
-                }
-            };
-            let clock = setInterval(updateTime, 1000);
-        };
+            resetTimer();
     };
-
+    };
     winner = getWinner();
     render();
 };
 
 function handleRightClick(event) {
+    event.preventDefault();
     cellId = event.target.id;
     if (event.target.id !== 'flagImg') {
         cellIdString = cellId.split('');
         cellRowIdx = parseInt(cellIdString[1]);
         cellColIdx = parseInt(cellIdString[3]);
-        console.log(event.target.id);
         clickedCell = board[cellRowIdx][cellColIdx];
-
-        if (clickedCell.flag === false) {
+        if (clickedCell.flag === false && flagsNum.innerHTML > 0) {
             clickedCell.flag = true;
             flagsNum.innerHTML--;
-        }
+            }
     } else {
         let cellUnderFlagId = event.target.parentElement.id;
         cellIdString = cellUnderFlagId.split('');
@@ -263,13 +257,23 @@ function handleRightClick(event) {
 };
 
 function getWinner() {
-
-};
+    board.forEach(function(rowArr, rowIdx) {
+        rowArr.forEach(function(cell, colIdx) {
+            cellId = `r${rowIdx}c${colIdx}`;
+            currentCell = document.getElementById(cellId);
+            if (board[rowIdx][colIdx].revealed === true 
+                && currentCell.style.backgroundColor === 'white'
+                && flagsNum.innerHTML === '0')
+                // && time > 0) {
+                    return winner = 1;
+            });
+        });
+    };
 
 function render() {
+    renderAudio();
     renderBoard();
     renderMessages();
-    renderAudio();
 };
 
 function renderAudio() {
@@ -284,18 +288,41 @@ function renderAudio() {
 
 function renderMessages() {
     if (winner === 1) {
-        messageEl.innerHTML = '<h4>GAME OVER - YOU WIN!</h4>';
+        messageEl.innerHTML = 'GAME OVER - YOU WIN!';
         messageEl.style.backgroundColor = 'green';
         messageEl.style.color = 'white';
-        document.querySelector('button').style.visibility = 'visible';
+        buttonEl.style.visibility = 'visible';
+        flagsNum.innerHTML = '10';
+        timer = resetTimer();
     } else if (winner === -1) {
         messageEl.innerHTML = 'GAME OVER - YOU LOSE!';
         messageEl.style.backgroundColor = 'red';
-        document.querySelector('button').style.visibility = 'visible';
+        buttonEl.style.visibility = 'visible';
+        flagsNum.innerHTML = '10';
+        timer = resetTimer();
     } else {
         messageEl.innerHTML = 'Click any square!';
+        messageEl.style.backgroundColor = 'white';
+        buttonEl.style.visibility = 'hidden';
     };
 };
+
+function resetTimer() {
+    const startingMinutes = 2;
+        let time = startingMinutes * 60;
+            function updateTime() {
+                let minutes = Math.floor(time/60);
+                let seconds = time % 60;
+                time--;
+                timeEl.innerHTML = `${minutes}:${seconds}`;
+                timer = 'started';
+                if (time === -1 || winner === -1) {
+                    clearInterval(clock);
+                    winner = -1;
+                }
+            };
+            let clock = setInterval(updateTime, 1000);
+}
 
 function renderBoard() {
     board.forEach(function(rowArr, rowIdx) {
@@ -309,15 +336,19 @@ function renderBoard() {
                     currentCell.innerHTML = `<div id="r${rowIdx}c${colIdx}"></div>`;
                 };
             };
-            if (board[rowIdx][colIdx].revealed === true && board[rowIdx][colIdx].isBomb === false) {
+            if (board[rowIdx][colIdx].revealed === true && board[rowIdx][colIdx].isBomb === false && board[rowIdx][colIdx].flag === false) {
                 currentCell.style.backgroundColor = 'white';
                 if (board[rowIdx][colIdx].bombsAdj > 0) {
                 currentCell.innerHTML = `${board[rowIdx][colIdx].bombsAdj}`;
                 };
             } else if (board[rowIdx][colIdx].revealed === true && board[rowIdx][colIdx].isBomb === true) {
                 currentCell.style.backgroundColor = 'red';
-                currentCell.innerHTML = '<img src="https://i.imgur.com/8csqBHC.png">';
+                currentCell.innerHTML = '<img src="https://i.imgur.com/eTBdjcY.png">';
                 winner = -1;
+            };
+            if (board[rowIdx][colIdx].revealed === false && board[rowIdx][colIdx].flag === false) {
+                currentCell.style.backgroundColor = 'lightgrey';
+                
             };
         });
     });
