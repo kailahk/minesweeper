@@ -9,7 +9,6 @@ let audio;
 let timer; 
 let mCount;
 
-
 /*----- cached elements  -----*/
 const messageEl = document.getElementById('message');
 const flagsNum = document.getElementById('flagsLeft');
@@ -58,9 +57,7 @@ function checkBombsAdj(rowIdx, colIdx) {
         let neighbor6 = document.getElementById(`r${rowIdx+1}c${colIdx-1}`);
         let neighbor7 = document.getElementById(`r${rowIdx+1}c${colIdx}`);
         let neighbor8 = document.getElementById(`r${rowIdx+1}c${colIdx+1}`);
-
         let neighbors = [neighbor1, neighbor2, neighbor3, neighbor4, neighbor5, neighbor6, neighbor7, neighbor8];
-
         neighbors.forEach(function(neighbor) {
             if (neighbor) {
                 let neighborID = neighbor.id;
@@ -371,7 +368,6 @@ function renderBoard() {
     });
 };
 
-
 function checkNeighbors(rowIdx, colIdx) {
     let neighbor1 = document.getElementById(`r${rowIdx-1}c${colIdx-1}`);
     let neighbor2 = document.getElementById(`r${rowIdx-1}c${colIdx}`);
@@ -381,9 +377,7 @@ function checkNeighbors(rowIdx, colIdx) {
     let neighbor6 = document.getElementById(`r${rowIdx+1}c${colIdx-1}`);
     let neighbor7 = document.getElementById(`r${rowIdx+1}c${colIdx}`);
     let neighbor8 = document.getElementById(`r${rowIdx+1}c${colIdx+1}`);
-
     let neighbors = [neighbor1, neighbor2, neighbor3, neighbor4, neighbor5, neighbor6, neighbor7, neighbor8];
-
     neighbors.forEach(function(neighbor) {
         if (neighbor) { 
             let neighborId = neighbor.id;
