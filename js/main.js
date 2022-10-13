@@ -3,20 +3,20 @@ const music = new Audio("Sound/231578__lemoncreme__floating-synth-melody-at-130-
 music.loop = true;
 
 /*----- state variables -----*/
-let board; // array of 10 row arrays of 10 cell objects
-let winner; // null or 1 / -1
-let audio; // 'on' or 'off'
-let timer; // 'started' or 'notStarted'
-let mCount = 0;
+let board; 
+let winner; 
+let audio; 
+let timer; 
+let mCount;
 
 
 /*----- cached elements  -----*/
-let messageEl = document.getElementById('message');
-let flagsNum = document.getElementById('flagsLeft');
-let timeEl = document.getElementById('time');
-let soundEl = document.getElementById('sound');
-let boardEl = document.getElementById('board');
-let buttonEl = document.querySelector('button');
+const messageEl = document.getElementById('message');
+const flagsNum = document.getElementById('flagsLeft');
+const timeEl = document.getElementById('time');
+const soundEl = document.getElementById('sound');
+const boardEl = document.getElementById('board');
+const buttonEl = document.querySelector('button');
 
 /*----- event listeners -----*/
 boardEl.addEventListener('click', handleClick);
@@ -36,43 +36,46 @@ function generateBombs() {
             let bombRowIdx = parseInt(bombCellIdArr[0]);
             let bombColIdx = parseInt(bombCellIdArr[1]);
             if (board[bombRowIdx][bombColIdx].isBomb === false) {
-            board[bombRowIdx][bombColIdx].isBomb = true;
-            count++;
+                board[bombRowIdx][bombColIdx].isBomb = true;
+                count++;
             }
         } else {
-            board[0][parseInt(bomb)].isBomb = true;
-            count++;
+            if (board[0][parseInt(bomb)].isBomb === false) {
+                board[0][parseInt(bomb)].isBomb = true;
+                count++;
+            };
         };
     };
 };
 
 function checkBombsAdj(rowIdx, colIdx) {
     if (board[rowIdx][colIdx].isBomb === true) {
-    let neighbor1 = document.getElementById(`r${rowIdx-1}c${colIdx-1}`);
-    let neighbor2 = document.getElementById(`r${rowIdx-1}c${colIdx}`);
-    let neighbor3 = document.getElementById(`r${rowIdx-1}c${colIdx+1}`);
-    let neighbor4 = document.getElementById(`r${rowIdx}c${colIdx-1}`);
-    let neighbor5 = document.getElementById(`r${rowIdx}c${colIdx+1}`);
-    let neighbor6 = document.getElementById(`r${rowIdx+1}c${colIdx-1}`);
-    let neighbor7 = document.getElementById(`r${rowIdx+1}c${colIdx}`);
-    let neighbor8 = document.getElementById(`r${rowIdx+1}c${colIdx+1}`);
+        let neighbor1 = document.getElementById(`r${rowIdx-1}c${colIdx-1}`);
+        let neighbor2 = document.getElementById(`r${rowIdx-1}c${colIdx}`);
+        let neighbor3 = document.getElementById(`r${rowIdx-1}c${colIdx+1}`);
+        let neighbor4 = document.getElementById(`r${rowIdx}c${colIdx-1}`);
+        let neighbor5 = document.getElementById(`r${rowIdx}c${colIdx+1}`);
+        let neighbor6 = document.getElementById(`r${rowIdx+1}c${colIdx-1}`);
+        let neighbor7 = document.getElementById(`r${rowIdx+1}c${colIdx}`);
+        let neighbor8 = document.getElementById(`r${rowIdx+1}c${colIdx+1}`);
 
-    let neighbors = [neighbor1, neighbor2, neighbor3, neighbor4, neighbor5, neighbor6, neighbor7, neighbor8];
+        let neighbors = [neighbor1, neighbor2, neighbor3, neighbor4, neighbor5, neighbor6, neighbor7, neighbor8];
 
-    neighbors.forEach(function(neighbor) {
-        if (neighbor) {
-            let neighborID = neighbor.id;
-            let neighborIDArr = neighborID.split('');
-            let neighborRowIdx = parseInt(neighborIDArr[1]);
-            let neighborColIdx = parseInt(neighborIDArr[3]);
-            board[neighborRowIdx][neighborColIdx].bombsAdj++;
+        neighbors.forEach(function(neighbor) {
+            if (neighbor) {
+                let neighborID = neighbor.id;
+                let neighborIDArr = neighborID.split('');
+                let neighborRowIdx = parseInt(neighborIDArr[1]);
+                let neighborColIdx = parseInt(neighborIDArr[3]);
+                board[neighborRowIdx][neighborColIdx].bombsAdj++;
             } else return;
         });
-    }};
+    };
+};
 
 function init() {
     board = [
-        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false},  // 1st/top row (top obj is cell r0c0)
+        [{isBomb: false, bombsAdj: 0, revealed: false, flag: false},
         {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
         {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
         {isBomb: false, bombsAdj: 0, revealed: false, flag: false},
@@ -205,8 +208,6 @@ function handleClick(event) {
         } else if (audio === 'on') {
             audio = 'off';
         };
-    } else if (cellId === 'button') {
-        init();
     } else {
         let cellIdArr = cellId.split('');
         let cellRowIdx = parseInt(cellIdArr[1]);
@@ -215,13 +216,13 @@ function handleClick(event) {
         if (timeEl.innerHTML === '0:0') return;
         if (cellEl.style.backgroundColor !== 'white' && winner !== true && winner !== false) {
             if (clickedCell.flag === true) return;
-                if (clickedCell.isBomb === false) {
-                    clickedCell.revealed = true;
-                    checkNeighbors(cellRowIdx, cellColIdx);
-                } else if (clickedCell.isBomb === true) {
-                        clickedCell.revealed = true;
-                        winner = false;
-                };
+            if (clickedCell.isBomb === false) {
+                clickedCell.revealed = true;
+                checkNeighbors(cellRowIdx, cellColIdx);
+            } else if (clickedCell.isBomb === true) {
+                clickedCell.revealed = true;
+                winner = false;
+            };
         };
         if (timer === 'notStarted') {
             resetTimer();
@@ -245,7 +246,7 @@ function handleRightClick(event) {
             && cellEl.style.backgroundColor !== 'white') {
             clickedCell.flag = true;
             flagsNum.innerHTML--;
-            }
+        }
     } else {
         let cellUnderFlagId = event.target.parentElement.id;
         cellIdString = cellUnderFlagId.split('');
@@ -273,7 +274,6 @@ function getWinner() {
             if (board[rowIdx][colIdx].isBomb === true 
                 && board[rowIdx][colIdx].flag === true) {
                 mineCount++
-                console.log(mineCount);
             };
         });
     });
@@ -301,19 +301,20 @@ function renderAudio() {
 function renderMessages() {
     if (winner === true) {
         messageEl.innerHTML = 'GAME OVER - YOU WIN!';
-        messageEl.style.backgroundColor = 'green';
+        messageEl.style.backgroundColor = '#53917E';
         messageEl.style.color = 'white';
         buttonEl.style.visibility = 'visible';
         flagsNum.innerHTML = '10';
     } else if (winner === false) {
         messageEl.innerHTML = 'GAME OVER - YOU LOSE!';
-        messageEl.style.backgroundColor = 'red';
+        messageEl.style.backgroundColor = '#CC444B';
+        messageEl.style.color = 'black';
         buttonEl.style.visibility = 'visible';
         flagsNum.innerHTML = '10';
     } else {
         messageEl.innerHTML = 'Click any square!';
-        messageEl.style.backgroundColor = 'white';
-        messageEl.style.color = 'black';
+        messageEl.style.backgroundColor = '#F1E8E4';
+        messageEl.style.color = '#6D597A';
         buttonEl.style.visibility = 'hidden';
     };
 };
@@ -334,9 +335,9 @@ function resetTimer() {
                 showBombs();
             }
             renderMessages();
-        }
+        };
     };
-            let clock = setInterval(updateTime, 1000);
+    let clock = setInterval(updateTime, 1000);
 };
 
 function renderBoard() {
@@ -354,14 +355,16 @@ function renderBoard() {
             if (board[rowIdx][colIdx].revealed === true && board[rowIdx][colIdx].isBomb === false && board[rowIdx][colIdx].flag === false) {
                 currentCell.style.backgroundColor = 'white';
                 if (board[rowIdx][colIdx].bombsAdj > 0) {
-                currentCell.innerHTML = `${board[rowIdx][colIdx].bombsAdj}`;
+                    currentCell.innerHTML = `${board[rowIdx][colIdx].bombsAdj}`;
+                    currentCell.style.color = '#6D597A';
+                    currentCell.style.fontSize = '3vmin';
                 };
             } else if (board[rowIdx][colIdx].revealed === true && board[rowIdx][colIdx].isBomb === true) {
                 winner = false;
                 showBombs();
             };
             if (board[rowIdx][colIdx].revealed === false && board[rowIdx][colIdx].flag === false) {
-                currentCell.style.backgroundColor = 'lightgrey';
+                currentCell.style.backgroundColor = '#D5C3D5';
                 
             };
         });
@@ -388,15 +391,10 @@ function checkNeighbors(rowIdx, colIdx) {
             let neighborRowIdx = parseInt(neighborIdArr[1]);
             let neighborColIdx = parseInt(neighborIdArr[3]);
             let neighborCell = board[neighborRowIdx][neighborColIdx];
-            // if the neighbor of the cell is a bomb, it will be left as is
             if (neighborCell.isBomb === false) {
-                // if a neighbor of the cell clicked has bombsAdj = 0,
-                // the neighbor will reveal and its neighbors willbe checked
                 if (neighborCell.bombsAdj === 0 && neighborCell.revealed === false) {
                     neighborCell.revealed = true;
                     checkNeighbors(neighborRowIdx, neighborColIdx);
-                    // if a neighbor of the cell clicked has bombsAdj > 0, 
-                    // the neighbor will reveal but flood will stop
                 } else if (neighborCell.bombsAdj > 0) { 
                     neighborCell.revealed = true;
                 };
@@ -407,18 +405,14 @@ function checkNeighbors(rowIdx, colIdx) {
 };
 
 function showBombs() {
-    let bombs = 0;
-    while (bombs < 10) {
     board.forEach(function(rowArr, rowIdx) {
         rowArr.forEach(function(cell, colIdx) {
             cellId = `r${rowIdx}c${colIdx}`;
             let currentCell = document.getElementById(cellId)
             if (board[rowIdx][colIdx].isBomb === true) {
-                currentCell.style.backgroundColor = 'red';
+                currentCell.style.backgroundColor = '#CC444B';
                 currentCell.innerHTML = '<img src="https://i.imgur.com/eTBdjcY.png">';
-                bombs++
             };
         });
     });
-    };
 };

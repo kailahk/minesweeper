@@ -11,6 +11,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    background-color: #F1E8E4;
 }
 
 img {
@@ -22,32 +23,30 @@ header {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: -5vmin;
+    margin-top: -3vmin;
 }
 
 h1 {
     margin-bottom: -3vmin;
     font-size: 7vmin;
+    color: #6D597A;
 }
 
 #topBanner {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #9C72A8;
+    background-color: #6D597A;
     color: white;
     padding: 0 2vmin;
     width: 60vmin;
     margin-top: -1vmin;
-}
-
-h4 {
     font-size: 3vmin;
 }
 
 #flags {
     display: flex;
-    align-items: center
+    align-items: center;
 }
 
 #timeLeft {
@@ -73,10 +72,15 @@ button {
 }
 
 #board > div {
-    border: 0.2vmin solid #9C72A8;
+    border: 0.2vmin solid #6D597A;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+#board > div:hover {
+    transform: scale(1.1);
+    border: 0.5vmin solid #E1DCE5;
 }
 
 #timeLeft {
